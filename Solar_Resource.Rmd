@@ -75,7 +75,7 @@ df <- df %>%
 
 
 dni_plot <- ggplot(data = df,
-       aes(x = month, y = avg_dni, group = 1, color=avg_dni)) +
+       aes(x = month, y = avg_dni, group = 1, color=avg_ghi)) +
   geom_line() +
   geom_point() +
   theme_linedraw()
@@ -84,7 +84,7 @@ print(dni_plot + ggtitle("Average Direct Irradiation over Months"))
 ```
 ```{r}
 ghi_plot <- ggplot(data = df,
-       aes(x = month, y = avg_ghi, group = 1, color=avg_ghi)) +
+       aes(x = month, y = avg_ghi, group = 1, color=avg_dni)) +
   geom_line() +
   geom_point() +
   theme_linedraw()
