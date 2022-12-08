@@ -1,0 +1,94 @@
+---
+title: "Investigating New York Solar Resource Data"
+author: "Deniz"
+date: "2022-11-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("httr")
+```
+
+## Introduction
+
+- Title: Analyzing New York Solar Resource Data.
+
+```{r}
+api_key <- "SZehIKahDqdrXTQv3qCMWjfK0vDCDahIPowe87Ov"
+url <- "https://developer.nrel.gov/api/solar/solar_resource/v1.json"
+parameters <- list(api_key=api_key, lat=41, lon=-75)
+```
+
+
+## Getting the Data
+
+You can also embed plots, for example:
+
+```{r}
+response <- GET(url=url, query=parameters)
+
+status <- status_code(response)
+status
+
+response_type <- http_type(response)
+response_type
+
+content <- content(response, "text")
+print(content)
+```
+## Parsing and Examining the Data
+
+```{r}
+json_data <- jsonlite::fromJSON(content)
+json_data
+```
+
+## Splitting and Transforming the Data
+```{r}
+outputs <- json_data$outputs
+
+avg_dni <- as.numeric(outputs$avg_dni$monthly)
+avg_ghi <- as.numeric(outputs$avg_ghi$monthly)
+avg_lat_tilt <- as.numeric(outputs$avg_lat_tilt$monthly)
+
+df <- tibble::tibble("month"=month.abb, "avg_dni"=avg_dni,
+                     "avg_ghi"=avg_ghi, "avg_lat_tilt"=avg_lat_tilt)
+head(df)
+```
+
+## Visualizing Data
+```{r}
+library(ggplot2)
+library(dplyr)
+
+ggplot(data = df,
+       aes(x = month, y = avg_dni, group = 1)) +
+  geom_line() +
+  geom_point() +
+  theme_bw()
+
+```
+```{r}
+df <- df %>% 
+  mutate(month = factor(month, levels = month.abb))
+
+
+dni_plot <- ggplot(data = df,
+       aes(x = month, y = avg_dni, group = 1, color=avg_dni)) +
+  geom_line() +
+  geom_point() +
+  theme_linedraw()
+
+print(dni_plot + ggtitle("Average Direct Irradiation over Months"))
+```
+```{r}
+ghi_plot <- ggplot(data = df,
+       aes(x = month, y = avg_ghi, group = 1, color=avg_ghi)) +
+  geom_line() +
+  geom_point() +
+  theme_linedraw()
+
+print(ghi_plot + ggtitle("Average Global Horizontal Irradiation over Months"))
+
+```
